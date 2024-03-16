@@ -1,11 +1,13 @@
 package com.example.code_server.server.bridge;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufUtil;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.CharsetUtil;
 
-public class YOLOHandler extends MyChannelHandler {
+@ChannelHandler.Sharable
+public class JudgeHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         String receivedMessage = ((ByteBuf) msg).toString(CharsetUtil.UTF_8);
@@ -24,6 +26,5 @@ public class YOLOHandler extends MyChannelHandler {
          ByteBuf buffer = ctx.alloc().buffer();
          buffer.writeBytes("YOLO".getBytes());
          ctx.write(buffer);
-
     }
 }

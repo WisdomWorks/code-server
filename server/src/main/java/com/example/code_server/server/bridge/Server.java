@@ -2,16 +2,14 @@ package com.example.code_server.server.bridge;
 
 import io.netty.bootstrap.ServerBootstrap;
 
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.compression.ZlibCodecFactory;
+import io.netty.handler.codec.compression.ZlibWrapper;
 
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 
 /**
  * Discards any incoming data.
@@ -19,9 +17,9 @@ import java.net.SocketAddress;
 public class Server {
 
     private final InetSocketAddress address;
-    private final MyChannelHandler handler;
+    private final ChannelInboundHandlerAdapter handler;
 
-    public Server(InetSocketAddress address, MyChannelHandler handler) {
+    public Server(InetSocketAddress address, ChannelInboundHandlerAdapter handler) {
         this.address = address;
         this.handler = handler;
     }
@@ -36,7 +34,10 @@ public class Server {
                     .childHandler(new ChannelInitializer<SocketChannel>() { // (4)
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast(handler);
+                            ch.pipeline().
+                                    addLast(ZlibCodecFactory.newZlibEncoder(ZlibWrapper.ZLIB)).
+                                    addLast(ZlibCodecFactory.newZlibDecoder(ZlibWrapper.ZLIB)).
+                                    addLast(handler);
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)          // (5)

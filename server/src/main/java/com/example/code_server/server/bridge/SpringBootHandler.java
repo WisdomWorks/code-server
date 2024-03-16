@@ -1,8 +1,13 @@
 package com.example.code_server.server.bridge;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.CharsetUtil;
-public class BaseHandler extends MyChannelHandler {
+
+@ChannelHandler.Sharable
+public class SpringBootHandler extends ChannelInboundHandlerAdapter {
+
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf in = (ByteBuf) msg;
@@ -16,5 +21,4 @@ public class BaseHandler extends MyChannelHandler {
         String capitalized = packet.toUpperCase();
         ctx.writeAndFlush("Received: " + capitalized + "\n");
     }
-
 }

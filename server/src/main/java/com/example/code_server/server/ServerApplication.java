@@ -1,8 +1,8 @@
 package com.example.code_server.server;
 
-import com.example.code_server.server.bridge.BaseHandler;
+import com.example.code_server.server.bridge.JudgeHandler;
 import com.example.code_server.server.bridge.Server;
-import com.example.code_server.server.bridge.YOLOHandler;
+import com.example.code_server.server.bridge.SpringBootHandler;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import java.net.InetSocketAddress;
 
@@ -12,8 +12,8 @@ public class ServerApplication {
 		InetSocketAddress address1 = new InetSocketAddress("localhost", 8080);
 		InetSocketAddress address2 = new InetSocketAddress("localhost", 8081);
 
-		Server server1 = new Server(address1, new BaseHandler());
-		Server server2 = new Server(address2, new YOLOHandler());
+		Server server1 = new Server(address1, new SpringBootHandler());
+		Server server2 = new Server(address2, new JudgeHandler());
 		Thread t1 = new Thread(() -> {
 			try {
 				server1.run();
@@ -40,6 +40,5 @@ public class ServerApplication {
 			e.printStackTrace();
 		}
 	}
-
 }
 
