@@ -85,6 +85,7 @@ public class SpringBootHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode result = JsonNodeFactory.instance.objectNode();
+        System.out.println("hello");
         try {
             String packetString = ((ByteBuf) msg).toString(CharsetUtil.UTF_8);
             JsonNode packet = mapper.readTree(packetString);

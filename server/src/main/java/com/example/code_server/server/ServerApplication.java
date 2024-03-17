@@ -9,8 +9,8 @@ import java.net.InetSocketAddress;
 @SpringBootApplication
 public class ServerApplication {
 	public static void main(String[] args) throws Exception {
-		InetSocketAddress address1 = new InetSocketAddress("localhost", 8080);
-		InetSocketAddress address2 = new InetSocketAddress("localhost", 8081);
+		InetSocketAddress address1 = new InetSocketAddress("127.0.0.1", 8080);
+		InetSocketAddress address2 = new InetSocketAddress("127.0.0.1", 8081);
 
 		Server server1 = new Server(address1, new SpringBootHandler());
 		Server server2 = new Server(address2, new JudgeHandler());
