@@ -6,8 +6,12 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.FixedLengthFrameDecoder;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.bytes.ByteArrayEncoder;
 import io.netty.handler.codec.compression.ZlibCodecFactory;
 import io.netty.handler.codec.compression.ZlibWrapper;
+import io.netty.handler.codec.string.StringEncoder;
 
 import java.net.InetSocketAddress;
 
@@ -35,9 +39,11 @@ public class Server {
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
                             ch.pipeline().
+                                    addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4, 0, 4)).
                                     addLast(ZlibCodecFactory.newZlibEncoder(ZlibWrapper.ZLIB)).
                                     addLast(ZlibCodecFactory.newZlibDecoder(ZlibWrapper.ZLIB)).
                                     addLast(handler);
+//                                    addLast(new StringEncoder());
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)          // (5)

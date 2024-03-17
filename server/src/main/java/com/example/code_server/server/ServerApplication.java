@@ -1,8 +1,8 @@
 package com.example.code_server.server;
 
-import com.example.code_server.server.bridge.JudgeHandler;
+import com.example.code_server.server.bridge.handlers.JudgeHandler;
 import com.example.code_server.server.bridge.Server;
-import com.example.code_server.server.bridge.SpringBootHandler;
+import com.example.code_server.server.bridge.handlers.SpringBootHandler;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import java.net.InetSocketAddress;
 

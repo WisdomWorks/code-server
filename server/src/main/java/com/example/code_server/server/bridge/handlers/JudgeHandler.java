@@ -1,4 +1,4 @@
-package com.example.code_server.server.bridge;
+package com.example.code_server.server.bridge.handlers;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
