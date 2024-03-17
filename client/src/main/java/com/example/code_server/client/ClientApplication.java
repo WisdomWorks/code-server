@@ -1,52 +1,43 @@
 package com.example.code_server.client;
 
-import com.example.code_server.client.model.Submission;
-import com.example.code_server.client.model.ZlibCompression;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.example.code_server.client.handler.ClientHandler;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import reactor.core.publisher.Mono;
-import reactor.netty.Connection;
-import reactor.netty.tcp.TcpClient;
+
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 
 @SpringBootApplication
 public class ClientApplication {
 	public static void main(String[] args) throws Exception {
-		Connection connection =
-				TcpClient.create()
-						.host("127.0.0.1")
-						.port(8080)
-						.doOnConnected(connection1 -> {
-							System.out.println("Connected");
-						})
-						.connectNow();
 
-		ObjectMapper mapper = new ObjectMapper();
-		ObjectNode packet = JsonNodeFactory.instance.objectNode();
+		String host = "127.0.0.1";
+		int port = 8080;
 
-		packet.put("name", "submission-request");
-		packet.put("submissionId", "1");
-		packet.put("problemId", "1");
-		packet.put("language", "java");
-		packet.put("sourceCode", "source");
-		packet.put("judgeId", "1");
-		packet.put("priority", 0);
+		EventLoopGroup group = new NioEventLoopGroup();
+		try {
+			Bootstrap bootstrap = new Bootstrap();
+			bootstrap.group(group)
+					.channel(NioSocketChannel.class)
+					.option(ChannelOption.TCP_NODELAY, true)
+					.handler(new ChannelInitializer<SocketChannel>() {
+						@Override
+						public void initChannel(SocketChannel ch) throws Exception {
+							ch.pipeline().addLast(new ClientHandler());
+						}
+					});
 
-		// Convert JSON object to string
-		String packetString = mapper.writeValueAsString(packet);
-
-		// Compress the string
-		byte[] compressedData = ZlibCompression.zlibify(packetString);
-
-		// Send the compressed data
-		connection.outbound()
-				.sendByteArray(Mono.just(compressedData))
-				.then()
-				.subscribe();
-
-		connection.onDispose()
-				.block();
+			// Connect to the server
+			bootstrap.connect(host, port).sync().channel().closeFuture().sync();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} finally {
+			group.shutdownGracefully();
+		}
 	}
 }
 

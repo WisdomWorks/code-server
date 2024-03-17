@@ -5,9 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.ChannelDuplexHandler;
 import io.netty.util.CharsetUtil;
 import lombok.SneakyThrows;
 
@@ -85,7 +89,7 @@ public class SpringBootHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode result = JsonNodeFactory.instance.objectNode();
-        System.out.println("hello");
+        System.out.println("Received from client: " + ((ByteBuf) msg).toString(CharsetUtil.UTF_8));
         try {
             String packetString = ((ByteBuf) msg).toString(CharsetUtil.UTF_8);
             JsonNode packet = mapper.readTree(packetString);
@@ -97,7 +101,28 @@ public class SpringBootHandler extends ChannelInboundHandlerAdapter {
             result = JsonNodeFactory.instance.objectNode();
             result.put("name", "bad-request");
         } finally {
-            ctx.write(mapper.writeValueAsString(result).getBytes(CharsetUtil.UTF_8));
+            System.out.println("Sending to client: " + mapper.writeValueAsString(result));
+            ByteBuf buf = Unpooled.wrappedBuffer(mapper.writeValueAsString(result).getBytes());
+            final WriteListener listener = new WriteListener() {
+                @Override
+                public void messageRespond(boolean success) {
+                    System.out.println(success ? "reply success" : "reply fail");
+                }
+            };
+
+            ctx.writeAndFlush(buf).addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    if (listener != null) {
+                        listener.messageRespond(future.isSuccess());
+                    }
+                }
+            });
+//            ctx.writeAndFlush(mapper.writeValueAsString(result).getBytes(CharsetUtil.UTF_8));
         }
+    }
+
+    public interface WriteListener {
+        void messageRespond(boolean success);
     }
 }
