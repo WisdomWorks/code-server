@@ -11,6 +11,9 @@ import reactor.core.publisher.Mono;
 import reactor.netty.Connection;
 import reactor.netty.tcp.TcpClient;
 
+import java.io.IOException;
+import java.util.zip.DataFormatException;
+
 @SpringBootApplication
 public class ClientApplication {
 	public static void main(String[] args) throws Exception {
@@ -54,9 +57,8 @@ public class ClientApplication {
 				.take(1) // Take only one response
 				.doOnTerminate(connection::dispose) // Dispose the connection after receiving the response
 				.subscribe(response -> {
-//					try {
-//						ZlibCompression.dezlibify(response);
-						System.out.println("Received data from server: " + response);
+					try {
+						System.out.println("Received data from server: " + ZlibCompression.dezlibify(response));
 						// Parse the JSON response
 //						JsonNode jsonResponse = mapper.readTree(response);
 
@@ -66,11 +68,11 @@ public class ClientApplication {
 //					} catch (JsonProcessingException e) {
 ////						 Handle JSON parsing exception
 //						e.printStackTrace();
-//					} catch (DataFormatException e) {
-//                        throw new RuntimeException(e);
-//                    } catch (IOException e) {
-//                        throw new RuntimeException(e);
-//                    }
+					} catch (DataFormatException e) {
+                        throw new RuntimeException(e);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 });
 
 		connection.onDispose()
