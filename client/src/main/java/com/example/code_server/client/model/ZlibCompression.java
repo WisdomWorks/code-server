@@ -31,27 +31,15 @@ public class ZlibCompression {
     }
 
     public static String dezlibify(byte[] data) throws IOException, DataFormatException {
-//        Inflater inflater = new Inflater();
-//        inflater.setInput(data, 4, data.length - 4);
-//
-//        // Giải nén dữ liệu
-//        int uncompressedLength = inflater.inflate(data);
-//
-//        // Giải nén hoàn thành, giải phóng tài nguyên
-//        inflater.end();
-//
-//        // Chuyển đổi byte array thành String và trả về
-//        return new String(data, 0, uncompressedLength, CharsetUtil.UTF_8);
         ByteBuf byteBuf = Unpooled.wrappedBuffer(data);
         try {
-            // Giải nén dữ liệu
             byte[] byteArray = new byte[byteBuf.readableBytes()];
             byteBuf.readBytes(byteArray);
 
             Inflater inflater = new Inflater();
             inflater.setInput(byteArray);
 
-            byte[] uncompressedData = new byte[1024]; // Đảm bảo đủ lớn để chứa dữ liệu giải nén
+            byte[] uncompressedData = new byte[8 * 1024]; // Đảm bảo đủ lớn để chứa dữ liệu giải nén
             int uncompressedLength = inflater.inflate(uncompressedData);
             inflater.end();
 

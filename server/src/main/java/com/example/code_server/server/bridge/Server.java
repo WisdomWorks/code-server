@@ -43,7 +43,6 @@ public class Server {
                                     addLast(ZlibCodecFactory.newZlibEncoder(ZlibWrapper.ZLIB)).
                                     addLast(ZlibCodecFactory.newZlibDecoder(ZlibWrapper.ZLIB)).
                                     addLast(handler);
-//                                    addLast(new StringEncoder());
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)          // (5)

@@ -11,7 +11,6 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.ChannelDuplexHandler;
 import io.netty.util.CharsetUtil;
 import lombok.SneakyThrows;
 
@@ -118,7 +117,6 @@ public class SpringBootHandler extends ChannelInboundHandlerAdapter {
                     }
                 }
             });
-//            ctx.writeAndFlush(mapper.writeValueAsString(result).getBytes(CharsetUtil.UTF_8));
         }
     }
 
