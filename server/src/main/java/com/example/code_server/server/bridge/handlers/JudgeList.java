@@ -14,16 +14,19 @@ class PriorityMarker {
 
 
 public class JudgeList {
-//    class JudgeList(object):
-//    priorities = 4
-//
-//    def __init__(self):
-//    self.queue = dllist()
-//    self.priority = [self.queue.append(PriorityMarker(i)) for i in range(self.priorities)]
-//    self.judge = new JudgeHandler()? (IDONTKNOW, DONT ASK ME)
-//    self.node_map = {}
-//    self.lock = RLock()
-//
+    private static final int priorities = 4;
+    LinkedList<Object> queue = new LinkedList<>();
+    List<PriorityMarker> priority = new ArrayList<>();
+    JudgeHandler judge;
+    HashMap<Integer, Object> nodeMap = new HashMap<>();
+    ReentrantLock lock = new ReentrantLock();
+
+    public JudgeList() {
+        for (int i = 0; i < priorities; i++) {
+            priority.add(new PriorityMarker(i));
+        }
+    }
+
 //    def _handle_free_judge(self, judge):
 //    with self.lock:
 //    node = self.queue.first
