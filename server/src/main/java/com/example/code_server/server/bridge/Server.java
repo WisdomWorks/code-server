@@ -1,6 +1,5 @@
 package com.example.code_server.server.bridge;
 
-import com.example.code_server.server.bridge.handlers.CustomChannelInitializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -37,9 +36,9 @@ public class Server {
             ServerBootstrap b = new ServerBootstrap(); // (2)
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class) // (3)
-                    .childHandler(new CustomChannelInitializer() { // (4)
+                    .childHandler(new ChannelInitializer<SocketChannel>() { // (4)
                         @Override
-                        public void initChannel(SocketChannel ch) {
+                        public void initChannel(SocketChannel ch) throws Exception {
                             ch.pipeline().
                                     addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4, 0, 4)).
                                     addLast(new LengthFieldPrepender(4), ZlibCodecFactory.newZlibEncoder(ZlibWrapper.ZLIB)).

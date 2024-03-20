@@ -45,7 +45,6 @@ public class ClientApplication {
 		ByteBuf buffer = Unpooled.buffer(4 + compressedData.length);
 		buffer.writeInt(compressedData.length);
 		buffer.writeBytes(compressedData);
-
 		connection
 				.outbound()
 				.send(Mono.just(buffer))
