@@ -59,15 +59,6 @@ public class ClientApplication {
 				.subscribe(response -> {
 					try {
 						System.out.println("Received data from server: " + ZlibCompression.dezlibify(response));
-						// Parse the JSON response
-//						JsonNode jsonResponse = mapper.readTree(response);
-
-						// Process the JSON response as needed
-						// ...
-
-//					} catch (JsonProcessingException e) {
-////						 Handle JSON parsing exception
-//						e.printStackTrace();
 					} catch (DataFormatException e) {
                         throw new RuntimeException(e);
                     } catch (IOException e) {
