@@ -1,5 +1,7 @@
 package com.example.code_server.server.bridge.handlers;
 
+import com.example.code_server.server.bridge.constants.JudgePriority;
+
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
@@ -14,16 +16,144 @@ class PriorityMarker {
 
 
 public class JudgeList {
-    private static final int priorities = 4;
+    private final int priorities = 4;
     LinkedList<Object> queue = new LinkedList<>();
     List<PriorityMarker> priority = new ArrayList<>();
-    JudgeHandler judge;
+    JudgeHandler judge; //????
     HashMap<Integer, Object> nodeMap = new HashMap<>();
     ReentrantLock lock = new ReentrantLock();
 
     public JudgeList() {
         for (int i = 0; i < priorities; i++) {
-            priority.add(new PriorityMarker(i));
+            this.priority.add(new PriorityMarker(i));
+        }
+    }
+
+    public void handleFreeJudge(){
+        this.lock.lock();
+        try {
+            Object node = this.queue.getFirst();
+            int priority = 0;
+            while (node != null) {
+                if (node instanceof PriorityMarker) {
+                    priority = ((PriorityMarker) node).priority + 1;
+                } else if (priority >= JudgePriority.REJUDGE_PRIORITY
+                        && !judge.isWorking() && !judge.isDisabled())
+                {
+                    return;
+                } else {
+                    int id = ((Submission) node).getSubmissionId();
+                    String problem = ((Submission) node).getProblemId();
+                    String language = ((Submission) node).getLanguage();
+                    String source = ((Submission) node).getSource();
+                    String judgeId = ((Submission) node).getJudgeId();
+                    if (this.judge.canJudge(problem, language, judgeId)) {
+                        try {
+                            this.judge.submit(id, problem, language, source);
+                        } catch (Exception e) {
+//                            System.out.println("Failed to dispatch " + id + " (" + problem + ", " + language + ") to " + judge.getName());
+                            return;
+                        }
+//                        System.out.println("Dispatched queued submission " + id + ": " + judge.getName());
+                        this.queue.remove(node);
+                        this.nodeMap.remove(id);
+                        break;
+                    }
+                }
+                node = this.queue.getFirst();
+            }
+        } finally {
+            this.lock.unlock();
+        }
+
+    }
+
+    public void register() {
+        lock.lock();
+        try {
+            this.disconnect(true);
+            this.handleFreeJudge();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void disconnect(boolean force) {
+        this.lock.lock();
+        try {
+            this.judge.disconnect(force);
+        } finally {
+            this.lock.unlock();
+        }
+    }
+
+    public void updateProblems() {
+        this.lock.lock();
+        try {
+            this.handleFreeJudge();
+        } finally {
+            this.lock.unlock();
+        }
+    }
+
+    public void updateDisableJudge(boolean isDisabled) {
+        this.lock.lock();
+        try {
+            this.judge.setDisabled(isDisabled);
+        } finally {
+            this.lock.unlock();
+        }
+    }
+
+    public void onJudgeFree() {
+        System.out.println("Judge available after grading: " + judge.getName());
+        this.lock.lock();
+        try {
+            this.judge.setWorking(false);
+            this.handleFreeJudge();
+        } finally {
+            this.lock.unlock();
+        }
+    }
+
+    public boolean abort(int submission) {
+        System.out.println("Abort request: " + submission);
+        this.lock.lock();
+        try {
+            try {
+                this.queue.remove(this.nodeMap.get(submission));
+                this.nodeMap.remove(submission);
+            } catch (Exception e2) {
+                return false;
+            }
+        } finally {
+            this.lock.unlock();
+        }
+        return false;
+    }
+
+    public boolean checkPriority(int priority) {
+        return 0 <= priority && priority < this.priorities;
+    }
+
+    public void judge(int id, String problem, String language, String source, String judgeId, int priority) {
+        this.lock.lock();
+        try {
+            if (this.nodeMap.containsKey(id)) {
+                return;
+            }
+            if (!judge.isWorking() && !judge.isDisabled()) {
+                try {
+                    this.judge.submit(id, problem, language, source);
+                } catch (Exception e) {
+                    System.out.println("Failed to dispatch " + id + " (" + problem + ", " + language + ") to " + judge.getName());
+                }
+            } else {
+                this.nodeMap.put(id, this.queue.add(new Submission(id, problem, language, source, judgeId)), this.priority.get(priority));
+                System.out.println("Queued submission: " + id);
+            }
+        } finally {
+            this.lock.unlock();
         }
     }
 
