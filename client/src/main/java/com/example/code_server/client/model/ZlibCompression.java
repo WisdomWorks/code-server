@@ -36,8 +36,7 @@ public class ZlibCompression {
             byteBuf.skipBytes(4);
             byte[] byteArray = new byte[byteBuf.readableBytes()];
             byteBuf.readBytes(byteArray);
-
-            Inflater inflater = new Inflater();
+            Inflater inflater = new Inflater(false);
             inflater.setInput(byteArray);
 
             byte[] uncompressedData = new byte[8 * 1024];
